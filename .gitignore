@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Data
+data/
+*.db
+*.sqlite3
+
+# Word temp files
+~$*.docx
+~$*.doc
+
+# Docs
+docs/
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/analysis.html
+
+# Auxiliary scripts
+scripts/gen_vkr.py
+scripts/gen_docs.py
+scripts/gen_plots_for_doc.py
+
+# Pytest / coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# mypy
+.mypy_cache/

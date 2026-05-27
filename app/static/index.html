@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>БТС анализа мимических проб (БП vs КГ)</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --text:#e8ecff; --muted:#a9b2d6;
+      --line:#22305f; --accent:#6ea8fe; --ok:#22c55e; --err:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: "Segoe UI", Arial, sans-serif; color:var(--text);
+      background: radial-gradient(1000px 600px at 20% 0%, #1a2350 0%, var(--bg) 55%) fixed;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+    .logo{
+      width:44px;height:44px;border-radius:12px;
+      background: linear-gradient(135deg, var(--accent), #9b8cff);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow: 0 10px 30px rgba(110,168,254,0.25);
+      font-weight:700;color:#07102a;
+    }
+    h1{font-size:20px;margin:0}
+    .sub{color:var(--muted);margin:6px 0 0 0;font-size:13px}
+    .topbar{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+    .topbar .user{padding:6px 10px;border-radius:999px;border:1px solid rgba(34,48,95,0.9);background:rgba(15,23,48,0.6)}
+    .topbar button{
+      width:auto;margin:0;padding:6px 12px;border-radius:10px;
+      background:rgba(110,168,254,0.18);
+      color:var(--text);border:1px solid rgba(110,168,254,0.35);font-weight:600;
+    }
+    .grid{display:grid;grid-template-columns: 420px 1fr;gap:16px}
+    .card{
+      background: rgba(18,26,51,0.86);
+      border:1px solid rgba(34,48,95,0.7);
+      border-radius:16px;
+      padding:16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .card h2{margin:0 0 12px 0;font-size:15px}
+    label{display:block;color:var(--muted);font-size:12px;margin:10px 0 6px}
+    input,select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(34,48,95,0.9);
+      background: rgba(15,23,48,0.8);
+      color:var(--text);
+      outline:none;
+    }
+    input[type="file"]{padding:10px}
+    button{
+      width:100%;
+      margin-top:12px;
+      padding:11px 12px;
+      border-radius:12px;
+      border:0;
+      background: linear-gradient(135deg, var(--accent), #9b8cff);
+      color:#07102a;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button.ghost{
+      background:transparent;color:var(--text);
+      border:1px solid rgba(110,168,254,0.35);
+    }
+    button:disabled{opacity:0.6;cursor:not-allowed}
+    .hint{color:var(--muted);font-size:12px;line-height:1.35;margin-top:10px}
+    .status{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(34,48,95,0.9);
+      background: rgba(15,23,48,0.8);
+      font-size:13px;
+      white-space:pre-wrap;
+    }
+    .kpi{display:grid;grid-template-columns: repeat(4, 1fr);gap:10px;margin-bottom:12px}
+    .kpi .box{
+      background: rgba(15,23,48,0.75);
+      border:1px solid rgba(34,48,95,0.9);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .kpi .t{font-size:11px;color:var(--muted)}
+    .kpi .v{font-size:14px;margin-top:4px}
+    .bar{height:8px;border-radius:99px;background:rgba(34,48,95,0.6);overflow:hidden;margin-top:8px}
+    .bar > div{height:100%;background:linear-gradient(135deg, var(--ok), #86efac)}
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid rgba(34,48,95,0.9);
+      background: rgba(15,23,48,0.65);
+      margin-top:10px;
+    }
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(34,48,95,0.7);font-size:13px}
+    th{color:var(--muted);font-weight:600;text-align:left;background: rgba(18,26,51,0.6)}
+    tr:last-child td{border-bottom:0}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .imgcard{
+      border:1px solid rgba(34,48,95,0.9);
+      border-radius:14px;
+      background: rgba(15,23,48,0.65);
+      padding:12px;
+    }
+    .imgcard h3{margin:0 0 10px 0;font-size:13px;color:var(--muted)}
+    .imgcard img{
+      width:100%;
+      border-radius:10px;
+      display:block;
+      cursor:zoom-in;
+    }
+    .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .actions button.linklike{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 12px;border-radius:12px;width:auto;margin:0;
+      background: rgba(110,168,254,0.18);
+      border:1px solid rgba(110,168,254,0.35);
+      color:var(--text);text-decoration:none;
+      font-weight:600;
+    }
+    .actions button.linklike:hover{background: rgba(110,168,254,0.25)}
+    .badge{
+      display:inline-block;padding:2px 8px;border-radius:999px;
+      font-size:12px;border:1px solid rgba(34,48,95,0.9);
+      background: rgba(15,23,48,0.7);color:var(--muted)
+    }
+
+    .summary{
+      margin:10px 0;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(34,48,95,0.9);
+      background: rgba(15,23,48,0.65);
+    }
+    .summary .t{color:var(--muted);font-size:12px}
+    .summary .v{margin-top:6px;font-size:14px;line-height:1.35}
+    .summary .m{margin-top:6px;color:var(--muted);font-size:12px}
+
+    /* Modal for images */
+    .modal{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,0.75);
+      display:none; align-items:center; justify-content:center;
+      padding:20px;
+      z-index:9999;
+    }
+    .modal.open{display:flex}
+    .modal img{
+      max-width: min(1100px, 96vw);
+      max-height: 90vh;
+      border-radius:12px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      cursor:zoom-out;
+    }
+
+    /* Auth overlay */
+    .auth-overlay{
+      position:fixed; inset:0;
+      background: rgba(7,12,30,0.92);
+      display:flex; align-items:center; justify-content:center;
+      padding:20px; z-index:10000;
+    }
+    .auth-overlay.hidden{display:none}
+    .auth-card{
+      width:100%; max-width:380px;
+      background: rgba(18,26,51,0.95);
+      border:1px solid rgba(34,48,95,0.9);
+      border-radius:16px;
+      padding:20px;
+    }
+    .auth-card h2{margin:0 0 4px 0;font-size:18px}
+    .auth-card .sub{margin:0 0 12px 0}
+    .auth-error{color:#fda4af;font-size:12px;margin-top:8px;min-height:14px}
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .kpi{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-overlay" id="auth_overlay">
+  <div class="auth-card">
+    <h2>Авторизация</h2>
+    <p class="sub">Доступ к системе анализа мимических проб.</p>
+    <form id="login_form">
+      <label>Логин</label>
+      <input id="login_user" name="username" autocomplete="username" required>
+      <label>Пароль</label>
+      <input id="login_pass" name="password" type="password" autocomplete="current-password" required>
+      <button id="login_btn" type="submit">Войти</button>
+      <div class="auth-error" id="auth_error"></div>
+    </form>
+    <p class="hint">
+      Если в системе ещё нет пользователей — первый администратор создаётся через
+      <code>POST /auth/bootstrap</code> (см. инструкцию запуска).
+    </p>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="logo">BTS</div>
+    <div>
+      <h1>Биотехническая система анализа мимических проб (БП vs КГ)</h1>
+      <p class="sub">Загрузка видео → Face Mesh → индексы 0…1 → признаки → Манна—Уитни → отчёт (DOCX/CSV)</p>
+    </div>
+    <div class="topbar">
+      <span class="user" id="who">—</span>
+      <button id="logout_btn" type="button">Выйти</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Загрузка и обработка</h2>
+      <form id="form">
+        <label>ID пациента</label>
+        <input name="external_id" placeholder="Например: BP_01 или KG_03" required>
+
+        <label>Группа</label>
+        <select name="group" required>
+          <option value="BP">БП (болезнь Паркинсона)</option>
+          <option value="KG">КГ (контрольная группа)</option>
+        </select>
+
+        <label>Проба</label>
+        <select name="test_type" required>
+          <option value="blink">Зажмуривание</option>
+          <option value="smile">Улыбка</option>
+        </select>
+
+        <label>Видеофайл</label>
+        <input type="file" name="file" accept="video/*" required>
+
+        <button id="btn" type="submit">Загрузить и обработать</button>
+      </form>
+
+      <div class="hint">
+        Для расчёта Манна—Уитни требуется ≥2 наблюдений в каждой группе для выбранной пробы.
+        Если данных пока мало — U и p-value будут «н/д».
+      </div>
+
+      <div id="status" class="status">Готово к работе.</div>
+
+      <h2 style="margin-top:18px">Машинное обучение: классификация групп</h2>
+      <label>Проба</label>
+      <select id="ml_test_type">
+        <option value="blink">Зажмуривание</option>
+        <option value="smile">Улыбка</option>
+      </select>
+      <button id="ml_btn" type="button" class="ghost">Запустить анализ</button>
+      <div id="ml_status" class="status" style="display:none"></div>
+      <div id="ml_results"></div>
+    </div>
+
+    <div class="card">
+      <h2>Отчёт обработки <span class="badge" id="badge">—</span></h2>
+
+      <div class="kpi">
+        <div class="box"><div class="t">Сессия</div><div class="v" id="k_session">—</div></div>
+        <div class="box"><div class="t">Пациент</div><div class="v" id="k_patient">—</div></div>
+        <div class="box"><div class="t">Проба</div><div class="v" id="k_test">—</div></div>
+        <div class="box">
+          <div class="t">Качество</div><div class="v" id="k_quality">—</div>
+          <div class="bar"><div id="qbar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="t">Итоговая интерпретация</div>
+        <div class="v" id="conclusion_text">—</div>
+        <div class="m">Оценка риска (0…1): <span id="risk_score">—</span></div>
+      </div>
+
+      <div class="actions" id="actions" style="display:none">
+        <button type="button" class="linklike" id="a_docx">Скачать отчёт (DOCX)</button>
+        <button type="button" class="linklike" id="a_csv">Скачать таблицу (CSV)</button>
+      </div>
+
+      <h3 style="margin:14px 0 6px 0; font-size:14px; color: var(--muted)">Вектор признаков</h3>
+      <div id="features_wrap"></div>
+
+      <h3 style="margin:14px 0 6px 0; font-size:14px; color: var(--muted)">Статистика (Манна—Уитни)</h3>
+      <div id="stats_wrap"></div>
+
+      <div class="two" id="plots_wrap" style="display:none">
+        <div class="imgcard">
+          <h3>Динамика индекса (данная запись)</h3>
+          <img id="img_mean" alt="Динамика индекса">
+        </div>
+        <div class="imgcard">
+          <h3>Boxplot индекса</h3>
+          <img id="img_box" alt="Boxplot признаков">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <img id="modal_img" alt="Увеличенное изображение">
+</div>
+
+<script>
+  // --- Auth state ---
+  const TOKEN_KEY = "bts_token";
+  function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
+  function setToken(t){ localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken(){ localStorage.removeItem(TOKEN_KEY); }
+
+  function authHeaders(extra={}){
+    const t = getToken();
+    return t ? Object.assign({ "Authorization": "Bearer " + t }, extra) : extra;
+  }
+
+  async function authFetch(url, options={}){
+    const opts = Object.assign({}, options);
+    opts.headers = Object.assign({}, opts.headers || {}, authHeaders());
+    const r = await fetch(url, opts);
+    if (r.status === 401) {
+      clearToken();
+      showAuthOverlay();
+      throw new Error("Требуется авторизация");
+    }
+    return r;
+  }
+
+  // --- Auth UI ---
+  const authOverlay = document.getElementById("auth_overlay");
+  const loginForm = document.getElementById("login_form");
+  const loginUser = document.getElementById("login_user");
+  const loginPass = document.getElementById("login_pass");
+  const loginBtn = document.getElementById("login_btn");
+  const authError = document.getElementById("auth_error");
+  const who = document.getElementById("who");
+  const logoutBtn = document.getElementById("logout_btn");
+
+  function showAuthOverlay(){ authOverlay.classList.remove("hidden"); loginUser.focus(); }
+  function hideAuthOverlay(){ authOverlay.classList.add("hidden"); }
+
+  async function fetchMe(){
+    const r = await fetch("/auth/me", { headers: authHeaders() });
+    if (!r.ok) return null;
+    return r.json();
+  }
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    authError.textContent = "";
+    loginBtn.disabled = true;
+    try {
+      const body = new URLSearchParams();
+      body.set("username", loginUser.value);
+      body.set("password", loginPass.value);
+      const r = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+      if (!r.ok) {
+        const txt = await r.text();
+        authError.textContent = "Ошибка входа: " + r.status + " " + txt;
+        return;
+      }
+      const data = await r.json();
+      setToken(data.access_token);
+      const me = await fetchMe();
+      if (!me) { authError.textContent = "Не удалось получить данные пользователя"; return; }
+      who.textContent = me.username;
+      hideAuthOverlay();
+    } catch (err) {
+      authError.textContent = "Ошибка сети: " + err;
+    } finally {
+      loginBtn.disabled = false;
+    }
+  });
+
+  logoutBtn.addEventListener("click", () => {
+    clearToken();
+    who.textContent = "—";
+    showAuthOverlay();
+  });
+
+  // --- Main page DOM refs ---
+  const form = document.getElementById("form");
+  const btn = document.getElementById("btn");
+  const status = document.getElementById("status");
+  const badge = document.getElementById("badge");
+
+  const kSession = document.getElementById("k_session");
+  const kPatient = document.getElementById("k_patient");
+  const kTest = document.getElementById("k_test");
+  const kQuality = document.getElementById("k_quality");
+  const qbar = document.getElementById("qbar");
+
+  const conclusionText = document.getElementById("conclusion_text");
+  const riskScore = document.getElementById("risk_score");
+
+  const featuresWrap = document.getElementById("features_wrap");
+  const statsWrap = document.getElementById("stats_wrap");
+
+  const actions = document.getElementById("actions");
+  const aDocx = document.getElementById("a_docx");
+  const aCsv = document.getElementById("a_csv");
+
+  const plotsWrap = document.getElementById("plots_wrap");
+  const imgMean = document.getElementById("img_mean");
+  const imgBox = document.getElementById("img_box");
+
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modal_img");
+
+  function fmtNum(x, digits=6){
+    if (x === null || x === undefined) return "н/д";
+    const v = Number(x);
+    if (!isFinite(v)) return "н/д";
+    return v.toFixed(digits);
+  }
+
+  function makeTable(headers, rows){
+    let html = "<table><thead><tr>";
+    for (const h of headers) html += `<th>${h}</th>`;
+    html += "</tr></thead><tbody>";
+    for (const r of rows){
+      html += "<tr>";
+      for (const cell of r) html += `<td>${cell}</td>`;
+      html += "</tr>";
+    }
+    html += "</tbody></table>";
+    return html;
+  }
+
+  function testName(t){
+    if (t === "smile") return "Улыбка";
+    if (t === "blink") return "Зажмуривание";
+    return t;
+  }
+
+  function openModal(src){
+    modalImg.src = src;
+    modal.classList.add("open");
+  }
+  modal.addEventListener("click", () => modal.classList.remove("open"));
+
+  imgMean.addEventListener("click", () => openModal(imgMean.src));
+  imgBox.addEventListener("click", () => openModal(imgBox.src));
+
+  // --- Authenticated image loader (downloads as blob and creates object URL) ---
+  async function loadAuthImage(imgEl, url){
+    try {
+      const r = await authFetch(url);
+      if (!r.ok) return;
+      const blob = await r.blob();
+      const obj = URL.createObjectURL(blob);
+      imgEl.dataset.objectUrl = obj;
+      imgEl.src = obj;
+    } catch (e) { /* ignore */ }
+  }
+
+  // --- Download via fetch + blob ---
+  async function downloadAuth(url, defaultName){
+    try {
+      const r = await authFetch(url);
+      if (!r.ok) { alert("Не удалось скачать файл: " + r.status); return; }
+      const blob = await r.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = obj;
+      a.download = defaultName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(obj), 5000);
+    } catch (e) {
+      alert("Ошибка скачивания: " + e);
+    }
+  }
+
+  let lastSessionId = null;
+  aDocx.addEventListener("click", () => {
+    if (!lastSessionId) return;
+    downloadAuth(`/download/report/${lastSessionId}`, `sess_${lastSessionId}_report.docx`);
+  });
+  aCsv.addEventListener("click", () => {
+    if (!lastSessionId) return;
+    downloadAuth(`/download/csv/${lastSessionId}`, `sess_${lastSessionId}_features.csv`);
+  });
+
+  // --- Upload form ---
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    status.textContent = "Идёт обработка…";
+    badge.textContent = "обработка";
+
+    try {
+      const fd = new FormData(form);
+      const r = await authFetch("/api/sessions", { method: "POST", body: fd });
+      const text = await r.text();
+
+      if (!r.ok){
+        status.textContent = "Ошибка сервера (" + r.status + "):\n" + text;
+        badge.textContent = "ошибка";
+        return;
+      }
+
+      const data = JSON.parse(text);
+      lastSessionId = data.id;
+
+      badge.textContent = data.status || "done";
+      kSession.textContent = data.id ?? "—";
+      kPatient.textContent = (fd.get("external_id") || "—") + " • " + (fd.get("group") || "—");
+      kTest.textContent = testName(data.test_type || fd.get("test_type"));
+
+      const q = Number(data.quality_score ?? 0);
+      kQuality.textContent = fmtNum(q, 3);
+      qbar.style.width = Math.max(0, Math.min(1, q)) * 100 + "%";
+
+      conclusionText.textContent = data.conclusion || "—";
+      riskScore.textContent = (data.risk_score === null || data.risk_score === undefined)
+        ? "—"
+        : Number(data.risk_score).toFixed(3);
+
+      const featRows = [];
+      for (const [k, v] of Object.entries(data.features || {})){
+        featRows.push([k, fmtNum(v, 6)]);
+      }
+      featuresWrap.innerHTML = makeTable(["Признак", "Значение"], featRows);
+
+      const statRows = [];
+      for (const [k, obj] of Object.entries(data.stats || {})){
+        const U = obj?.U ?? null;
+        const p = obj?.p_value ?? null;
+        statRows.push([k, fmtNum(U, 3), fmtNum(p, 6)]);
+      }
+      statsWrap.innerHTML = makeTable(["Признак", "U", "p-value"], statRows);
+
+      actions.style.display = "flex";
+
+      plotsWrap.style.display = "grid";
+      await loadAuthImage(imgMean, `/download/plot/mean/${data.id}`);
+      await loadAuthImage(imgBox, `/download/plot/box/${data.id}`);
+
+      status.textContent = "Готово. Графики увеличиваются по клику, отчёт доступен для скачивания.";
+    } catch (err){
+      status.textContent = "Ошибка: " + err;
+      badge.textContent = "ошибка";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // --- ML classification ---
+  const mlBtn = document.getElementById("ml_btn");
+  const mlStatus = document.getElementById("ml_status");
+  const mlResults = document.getElementById("ml_results");
+  const mlTestType = document.getElementById("ml_test_type");
+
+  function fmtPct(x){ return (x*100).toFixed(1) + "%"; }
+
+  mlBtn.addEventListener("click", async () => {
+    mlBtn.disabled = true;
+    mlStatus.style.display = "block";
+    mlStatus.textContent = "Выполняется анализ…";
+    mlResults.innerHTML = "";
+    try {
+      const fd = new FormData();
+      fd.set("test_type", mlTestType.value);
+      const r = await authFetch("/api/ml/loocv", { method: "POST", body: fd });
+      if (!r.ok){
+        const t = await r.text();
+        mlStatus.textContent = "Ошибка: " + r.status + " " + t;
+        return;
+      }
+      const data = await r.json();
+      mlStatus.textContent = "Готово. Проба: " + testName(data.test_type) +
+        ". Классификаторов: " + (data.results || []).length;
+
+      let html = "";
+      for (const res of data.results || []) {
+        const cm = res.confusion;
+        const cmTbl = `<table><thead><tr><th></th><th>Предсказано КГ</th><th>Предсказано БП</th></tr></thead>` +
+          `<tbody>` +
+          `<tr><th>Истина КГ</th><td>${cm[0][0]}</td><td>${cm[0][1]}</td></tr>` +
+          `<tr><th>Истина БП</th><td>${cm[1][0]}</td><td>${cm[1][1]}</td></tr>` +
+          `</tbody></table>`;
+        const fi = res.feature_importance || {};
+        let fiRows = "";
+        for (const [k,v] of Object.entries(fi)) {
+          fiRows += `<tr><td>${k}</td><td>${(v*100).toFixed(2)}%</td></tr>`;
+        }
+        const fiTbl = fiRows
+          ? `<table><thead><tr><th>Признак</th><th>Важность</th></tr></thead><tbody>${fiRows}</tbody></table>`
+          : `<div class="hint">Feature importance доступен только для Random Forest.</div>`;
+        html += `
+          <div class="summary" style="margin-top:14px">
+            <div class="t">Классификатор</div>
+            <div class="v"><b>${res.classifier}</b> &nbsp; n=${res.n_samples} (БП=${res.n_bp}, КГ=${res.n_kg})</div>
+            <div class="m">
+              Accuracy: <b>${fmtPct(res.accuracy)}</b> &nbsp;·&nbsp;
+              F1: <b>${res.f1.toFixed(3)}</b> &nbsp;·&nbsp;
+              ROC-AUC: <b>${res.roc_auc === null || res.roc_auc === undefined ? "н/д" : res.roc_auc.toFixed(3)}</b> &nbsp;·&nbsp;
+              PR-AUC: <b>${res.pr_auc === null || res.pr_auc === undefined ? "н/д" : res.pr_auc.toFixed(3)}</b>
+            </div>
+          </div>
+          <h3 style="margin:8px 0 4px 0;font-size:13px;color:var(--muted)">Confusion matrix</h3>
+          ${cmTbl}
+          <h3 style="margin:8px 0 4px 0;font-size:13px;color:var(--muted)">Feature importance</h3>
+          ${fiTbl}
+        `;
+      }
+      mlResults.innerHTML = html;
+    } catch (e) {
+      mlStatus.textContent = "Ошибка: " + e;
+    } finally {
+      mlBtn.disabled = false;
+    }
+  });
+
+  // --- On load: try to use existing token ---
+  (async () => {
+    if (getToken()){
+      const me = await fetchMe();
+      if (me){
+        who.textContent = me.username;
+        hideAuthOverlay();
+        return;
+      }
+      clearToken();
+    }
+    showAuthOverlay();
+  })();
+</script>
+</body>
+</html>

@@ -47,6 +47,10 @@ notebooks/analysis.html
 scripts/gen_vkr.py
 scripts/gen_docs.py
 scripts/gen_plots_for_doc.py
+scripts/ingest_new_facial.py
+scripts/analyze_loso.py
+scripts/analyze_improved.py
+*.db.bak_*
 
 # Pytest / coverage
 .pytest_cache/

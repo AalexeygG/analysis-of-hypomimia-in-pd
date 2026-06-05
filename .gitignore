@@ -31,6 +31,7 @@ ENV/
 data/
 *.db
 *.sqlite3
+*.db.bak_*
 
 # Word temp files
 ~$*.docx
@@ -41,16 +42,13 @@ docs/
 
 # Jupyter
 .ipynb_checkpoints/
-notebooks/analysis.html
+notebooks/*.html
 
-# Auxiliary scripts
-scripts/gen_vkr.py
-scripts/gen_docs.py
-scripts/gen_plots_for_doc.py
-scripts/ingest_new_facial.py
-scripts/analyze_loso.py
-scripts/analyze_improved.py
-*.db.bak_*
+# Local helper scripts (keep only the published ones)
+scripts/*
+!scripts/collect_stats.py
+!scripts/reextract_features.py
+!scripts/run_loocv_all.py
 
 # Pytest / coverage
 .pytest_cache/

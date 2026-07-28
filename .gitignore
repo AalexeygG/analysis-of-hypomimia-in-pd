@@ -40,6 +40,12 @@ data/
 # Docs
 docs/
 
+# Presentations
+*.pptx
+*.ppt
+*.key
+~$*.pptx
+
 # Jupyter
 .ipynb_checkpoints/
 notebooks/*.html
@@ -49,6 +55,7 @@ scripts/*
 !scripts/collect_stats.py
 !scripts/reextract_features.py
 !scripts/run_loocv_all.py
+!scripts/robustness_baselines.py
 
 # Pytest / coverage
 .pytest_cache/

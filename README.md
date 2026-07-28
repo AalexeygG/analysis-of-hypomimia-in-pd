@@ -82,3 +82,5 @@ curl -X POST http://127.0.0.1:8000/auth/bootstrap \
 ```bash
 jupyter notebook notebooks/analysis.ipynb
 ```
+
+Скрипт `scripts/robustness_baselines.py` дополнительно считает bootstrap-интервал для AUC, перестановочный тест значимости и сравнение с нейросетью MLP.
